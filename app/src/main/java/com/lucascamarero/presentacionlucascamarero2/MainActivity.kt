@@ -20,21 +20,30 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,7 +56,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lucascamarero.presentacionlucascamarero2.ui.theme.PresentacionLucasCamarero2Theme
 import androidx.core.net.toUri
-//
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,9 +79,9 @@ class MainActivity : ComponentActivity() {
 
 @Preview
 @Composable
-fun AppPreview(){
+fun AppPreview() {
     PresentacionLucasCamarero2Theme(dynamicColor = false) {
-        Surface (
+        Surface(
         ) {
             App()
         }
@@ -77,6 +92,10 @@ fun AppPreview(){
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun App() {
+    val navController = rememberNavController()
+    // Observar la ruta actual para cambiar el título dinámicamente
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route ?: "info"
     Scaffold(
 
         // barra superior
@@ -87,8 +106,16 @@ fun App() {
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 title = {
-                    Text("Presentación Lucas Camarero II",
-                        style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        when (currentRoute) {
+                            "home" -> "Pantalla Home"
+                            "info" -> "Presentación Lucas Camarero III"
+                            "gallery" -> "Galería"
+                            "settings" -> "Configuración"
+                            else -> "App"
+                        },
+                        style = MaterialTheme.typography.labelSmall
+                    )
                 },
             )
         },
@@ -96,9 +123,9 @@ fun App() {
         // barra inferior
         bottomBar = {
             BottomAppBar(
-                containerColor = MaterialTheme.colorScheme.secondary,
+            containerColor = MaterialTheme.colorScheme.secondary,
             ) {
-                PonerBotones()
+                BottomNavBar(navController)
             }
         }
     )
@@ -111,274 +138,78 @@ fun App() {
                 .background(MaterialTheme.colorScheme.primary),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Mensaje()
+            // definición de rutas de pantallas
+            NavHost(navController = navController,
+                startDestination = "info",
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                composable("home") {
+                    VentanaHome(navController)
+                }
+                composable("info") {
+                    VentanaInfo(navController)
+                }
+                composable("gallery") {
+                    VentanaGaleria(navController)
+                }
+                composable("settings") {
+                    VentanaSettings(navController)
+                }
+            }
         }
     }
 }
 
 @Composable
-fun PonerBotones() {
-    val context = LocalContext.current
-    Row (
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ){
-
-        // botón 1: enviar e-mail
-        Button(onClick = {
-            val recipient = "l.camareroperez@ikasle.eus"
-            val subject = "Prueba desde jet compose"
-            val body = "Hola Lucas del futuro. Esto es una prueba"
-            val uri = ("mailto:$recipient"
-                    + "?subject=${Uri.encode(subject)}"
-                    + "&body=${Uri.encode(body)}").toUri()
-            val intent = Intent(Intent.ACTION_SENDTO).apply { data = uri }
-            context.startActivity(intent)
-        }) { Icon(Icons.Default.Email, contentDescription = "Email") }
-
-        // botón 2: compartir contenido
-        Button(onClick = {
-            val intent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, "¿Cómo va el día?")
+fun BottomNavBar(navController: NavHostController) {
+    NavigationBar (containerColor = MaterialTheme.colorScheme.secondary){
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
+            selected = navController.currentBackStackEntry?.destination?.route == "home",
+            onClick = {
+                navController.navigate("home") {
+                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
             }
-            context.startActivity(Intent.createChooser(intent, "Compartir con"))
-        }) {
-            Icon(Icons.Default.Share, contentDescription = "Compartir")
-        }
+        )
 
-        // botón 3: abrir navegador
-        Button(onClick = {
-            val url = "https://developer.android.com/?hl=es-419"
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-            context.startActivity(intent)
-        }) {
-            Icon(Icons.Default.Info, contentDescription = "Navegador")
-        }
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Info, contentDescription = "info") },
+            selected = navController.currentBackStackEntry?.destination?.route == "info",
+            onClick = {
+                navController.navigate("info") {
+                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
+        )
 
-        // botón 4: abrir otra actividad
-        Button(onClick = {
-            val intent = Intent(context, OtraActividad::class.java)
-            context.startActivity(intent)
-        }) {
-            Icon(Icons.Default.Home, contentDescription = "Otra actividad")
-        }
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Create, contentDescription = "gallery") },
+            selected = navController.currentBackStackEntry?.destination?.route == "gallery",
+            onClick = {
+                navController.navigate("gallery") {
+                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
+        )
+
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Settings, contentDescription = "settings") },
+            selected = navController.currentBackStackEntry?.destination?.route == "settings",
+            onClick = {
+                navController.navigate("settings") {
+                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
+        )
     }
 }
 
-@Composable
-fun Mensaje() {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        item {
-            // creo una columna para poder alinear bien la imagen
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 45.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.fotolucas),
-                    contentDescription = "Imagen presentación",
-                    modifier = Modifier
-                        .size(180.dp)
-                        .border(width = 6.dp, color = Color.White, shape = CircleShape)
-                        .clip(CircleShape)
-                )
-            }
-
-            // nombre
-            Text(
-                text = "Lucas Camarero",
-                fontSize = 32.sp,
-                //color = Color.White,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 20.dp),
-                textAlign = TextAlign.Center
-            )
-
-            // descripción
-            Text(
-                text = "Librero y aprendiz de desarrollador, me gusta tocar el bajo y salir a andar por la montaña.",
-                fontSize = 17.sp,
-                //color = Color.White,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 40.dp, vertical = 5.dp),
-                textAlign = TextAlign.Center
-            )
-
-            // educación
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 26.dp)
-                    .padding(horizontal = 10.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.baseline_history_edu_24),
-                    contentDescription = "Educación"
-                )
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                ) {
-                    Text(
-                        text = "Perfil Académico",
-                        fontSize = 25.sp,
-                        //color = Color.White,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
-                    Text(
-                        text = "Técnico especialista en Marketing",
-                        fontSize = 15.sp,
-                        //color = Color.White,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp)
-                    )
-                }
-            }
-
-            // deportes
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 26.dp)
-                    .padding(horizontal = 10.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.outline_badminton_24),
-                    contentDescription = "Deportes"
-                )
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                ) {
-                    Text(
-                        text = "Deportes",
-                        fontSize = 25.sp,
-                        //color = Color.White,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
-                    Text(
-                        text = "Senderismo, natación",
-                        fontSize = 15.sp,
-                        //color = Color.White,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp)
-                    )
-                }
-            }
-
-            // comida
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 26.dp)
-                    .padding(horizontal = 10.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.outline_cake_24),
-                    contentDescription = "Comida"
-                )
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                ) {
-                    Text(
-                        text = "Comida",
-                        fontSize = 25.sp,
-                        //color = Color.White,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
-                    Text(
-                        text = "No le hago ascos a nada",
-                        fontSize = 15.sp,
-                        //color = Color.White,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp)
-                    )
-                }
-            }
-
-            // hobbies
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 26.dp)
-                    .padding(horizontal = 10.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.outline_chess_knight_24),
-                    contentDescription = "Hobbies"
-                )
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 10.dp)
-                ) {
-                    Text(
-                        text = "Hobbies",
-                        fontSize = 25.sp,
-                        //color = Color.White,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    )
-                    Text(
-                        text = "Música, cine y ajedrez",
-                        fontSize = 15.sp,
-                        //color = Color.White,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp)
-                    )
-                }
-            }
-
-            // iconos redes sociales
-            LazyRow(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 50.dp)
-                    .padding(horizontal = 60.dp)
-                    .padding(bottom = 60.dp)
-            ) {
-                item {
-                    Image(
-                        painter = painterResource(id = R.drawable.github),
-                        contentDescription = "Github"
-                    )
-                }
-                item {
-                    Image(
-                        painter = painterResource(id = R.drawable.linkedin_svgrepo_com),
-                        contentDescription = "Linkedin"
-                    )
-                }
-                item {
-                    Image(
-                        painter = painterResource(id = R.drawable.instagram),
-                        contentDescription = "Instagram"
-                    )
-                }
-            }
-        }
-    }
-}
