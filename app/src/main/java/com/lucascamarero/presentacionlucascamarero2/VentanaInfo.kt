@@ -24,11 +24,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
+/**
+ * Pantalla de información personal.
+ *
+ * @param navController Controlador de navegación para gestionar rutas (no utilizado).
+ */
 @Composable
 fun VentanaInfo(navController: NavController) {
     Mensaje()
 }
 
+/**
+ * Componente que muestra la información personal del usuario.
+ */
 @Composable
 fun Mensaje() {
     LazyColumn(

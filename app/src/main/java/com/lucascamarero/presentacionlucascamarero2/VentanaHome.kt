@@ -29,6 +29,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
+/**
+ * Pantalla de inicio home sin desarrollar.
+ *
+ * @param navController Controlador de navegación para gestionar rutas (no utilizado).
+ */
 @Composable
 fun VentanaHome(navController: NavController) {
     var presses by remember { mutableIntStateOf(0) }
