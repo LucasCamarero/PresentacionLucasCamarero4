@@ -19,6 +19,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -27,6 +28,7 @@ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.lucascamarero.presentacionlucascamarero2.ui.theme.PresentacionLucasCamarero2Theme
@@ -156,10 +158,21 @@ fun App() {
  */
 @Composable
 fun BottomNavBar(navController: NavHostController) {
+    // variables para poder cambiar de color los items al ser seleccionados
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     NavigationBar (containerColor = MaterialTheme.colorScheme.secondary){
         NavigationBarItem(
             icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-            selected = navController.currentBackStackEntry?.destination?.route == "home",
+            /*
+             * elimino esta línea:
+             * selected = navController.currentBackStackEntry?.destination?.route == "home",
+             * porque currentBackStackEntry no se actualiza de forma reactiva, por lo que los items quedan
+             * "desincronizados" y no se puede cambiar su color dependiendo de si están o no seleccionados.
+             * Y pongo la siguiente línea...
+            */
+            selected = currentRoute == "home",
             onClick = {
                 navController.navigate("home") {
                     popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -167,12 +180,20 @@ fun BottomNavBar(navController: NavHostController) {
                     restoreState = true
                 }
             },
-            label = { Text("Home") }
+            label = { Text("Home") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = MaterialTheme.colorScheme.onSecondary,
+                selectedTextColor = MaterialTheme.colorScheme.onSecondary,
+                unselectedIconColor = MaterialTheme.colorScheme.primary,
+                unselectedTextColor = MaterialTheme.colorScheme.primary,
+                indicatorColor = Color.Transparent
+            )
         )
 
         NavigationBarItem(
             icon = { Icon(Icons.Default.Info, contentDescription = "info") },
-            selected = navController.currentBackStackEntry?.destination?.route == "info",
+            //selected = navController.currentBackStackEntry?.destination?.route == "info",
+            selected = currentRoute == "info",
             onClick = {
                 navController.navigate("info") {
                     popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -180,12 +201,20 @@ fun BottomNavBar(navController: NavHostController) {
                     restoreState = true
                 }
             },
-            label = { Text("Info") }
+            label = { Text("Info") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = MaterialTheme.colorScheme.onSecondary,
+                selectedTextColor = MaterialTheme.colorScheme.onSecondary,
+                unselectedIconColor = MaterialTheme.colorScheme.primary,
+                unselectedTextColor = MaterialTheme.colorScheme.primary,
+                indicatorColor = Color.Transparent
+            )
         )
 
         NavigationBarItem(
             icon = { Icon(Icons.Default.Create, contentDescription = "gallery") },
-            selected = navController.currentBackStackEntry?.destination?.route == "gallery",
+            //selected = navController.currentBackStackEntry?.destination?.route == "gallery",
+            selected = currentRoute == "gallery",
             onClick = {
                 navController.navigate("gallery") {
                     popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -193,12 +222,20 @@ fun BottomNavBar(navController: NavHostController) {
                     restoreState = true
                 }
             },
-            label = { Text("Galería") }
+            label = { Text("Galería") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = MaterialTheme.colorScheme.onSecondary,
+                selectedTextColor = MaterialTheme.colorScheme.onSecondary,
+                unselectedIconColor = MaterialTheme.colorScheme.primary,
+                unselectedTextColor = MaterialTheme.colorScheme.primary,
+                indicatorColor = Color.Transparent
+            )
         )
 
         NavigationBarItem(
             icon = { Icon(Icons.Default.Settings, contentDescription = "settings") },
-            selected = navController.currentBackStackEntry?.destination?.route == "settings",
+            //selected = navController.currentBackStackEntry?.destination?.route == "settings",
+            selected = currentRoute == "settings",
             onClick = {
                 navController.navigate("settings") {
                     popUpTo(navController.graph.startDestinationId) { saveState = true }
@@ -206,7 +243,14 @@ fun BottomNavBar(navController: NavHostController) {
                     restoreState = true
                 }
             },
-            label = { Text("Ajustes") }
+            label = { Text("Ajustes") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = MaterialTheme.colorScheme.onSecondary,
+                selectedTextColor = MaterialTheme.colorScheme.onSecondary,
+                unselectedIconColor = MaterialTheme.colorScheme.primary,
+                unselectedTextColor = MaterialTheme.colorScheme.primary,
+                indicatorColor = Color.Transparent
+            )
         )
     }
 }
