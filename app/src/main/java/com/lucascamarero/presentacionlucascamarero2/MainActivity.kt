@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
+// prueba de git
 /**
  * Vista previa de la aplicación en el editor de diseño.
  */
