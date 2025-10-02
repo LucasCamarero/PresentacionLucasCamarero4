@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
@@ -56,7 +57,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-// prueba de git
+
 /**
  * Vista previa de la aplicación en el editor de diseño.
  */
@@ -84,6 +85,7 @@ fun App() {
     // Observar la ruta actual para cambiar el título dinámicamente
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: "info"
+
     Scaffold(
 
         // barra superior
@@ -100,6 +102,7 @@ fun App() {
                             "info" -> "Presentación Lucas Camarero III"
                             "gallery" -> "Galería"
                             "settings" -> "Ajustes"
+                            "salir" -> "Salir"
                             else -> "App"
                         },
                         style = MaterialTheme.typography.labelSmall
@@ -142,6 +145,9 @@ fun App() {
                 }
                 composable("settings") {
                     VentanaSettings(navController)
+                }
+                composable("salir") {
+                    VentanaSalir(navController)
                 }
             }
         }
@@ -244,6 +250,27 @@ fun BottomNavBar(navController: NavHostController) {
                 }
             },
             label = { Text("Ajustes") },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = MaterialTheme.colorScheme.onSecondary,
+                selectedTextColor = MaterialTheme.colorScheme.onSecondary,
+                unselectedIconColor = MaterialTheme.colorScheme.primary,
+                unselectedTextColor = MaterialTheme.colorScheme.primary,
+                indicatorColor = Color.Transparent
+            )
+        )
+
+        NavigationBarItem(
+            icon = { Icon(Icons.Default.Settings, contentDescription = "salir") },
+            //selected = navController.currentBackStackEntry?.destination?.route == "settings",
+            selected = currentRoute == "salir",
+            onClick = {
+                navController.navigate("salir") {
+                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            },
+            label = { Text("Salir") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = MaterialTheme.colorScheme.onSecondary,
                 selectedTextColor = MaterialTheme.colorScheme.onSecondary,
